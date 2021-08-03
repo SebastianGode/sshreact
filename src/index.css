@@ -27,3 +27,20 @@ body {
   color: white;
   text-align: center;
 }
+
+form {
+  width: 300px;
+  margin: 0 auto;
+}
+
+.Sign-Up {
+  margin-top: 0;
+}
+
+scale-app-shell {
+  --min-height: 0;
+}
+
+scale-button {
+  --width:100%;
+}
