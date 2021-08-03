@@ -2,18 +2,27 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-import App2 from './App2';
+import Footer from './Footer';
 import reportWebVitals from './reportWebVitals';
 import '@telekom/scale-components/dist/scale-components/scale-components.css';
+import {
+    applyPolyfills,
+    defineCustomElements,
+  } from '@telekom/scale-components/loader';
 
+
+applyPolyfills().then(() => {
+    defineCustomElements(window);
+});
 
 ReactDOM.render(
     <App />,
     document.getElementById('root')
 );
+
 ReactDOM.render(
-    <App2 />,
-    document.getElementById('test')
+    <Footer />,
+    document.getElementById('footer')
 )
 
 // If you want to start measuring performance in your app, pass a function

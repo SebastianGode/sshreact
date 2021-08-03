@@ -1,11 +1,12 @@
 import React from 'react';
-import Buttonneu from './button';
+import { ScaleButton } from '@telekom/scale-components-react';
 
 function App() {
-  return <Buttonneu name="Test" />;
+  return (
+    <div>
+      <ScaleButton>test</ScaleButton>
+    </div> 
+  );
 }
-// function Buttonneu(props) {
-//   return <h1>h{props.name}</h1>;
-// }
 
 export default App;
