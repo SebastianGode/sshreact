@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScaleAppFooter } from '@telekom/scale-components-react';
 
-function Footer(Contactname) {
+function Footer() {
     
     return (
         <div>

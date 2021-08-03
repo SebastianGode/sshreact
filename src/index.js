@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-import Footer from './Footer';
+import NavBar from './Navbar';
+import Footer from './Footer.jsx';
 import reportWebVitals from './reportWebVitals';
 import '@telekom/scale-components/dist/scale-components/scale-components.css';
 import {
@@ -14,6 +15,11 @@ import {
 applyPolyfills().then(() => {
     defineCustomElements(window);
 });
+
+ReactDOM.render(
+    <NavBar />,
+    document.getElementById('navbar')
+)
 
 ReactDOM.render(
     <App />,
