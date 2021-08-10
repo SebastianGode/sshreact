@@ -19,8 +19,15 @@
 .env.production.local
 .env
 
+# DB Data
+mariadb-data
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-
+#Docker-compose
+docker-compose.yml 
+#git update-index --assume-unchanged 
+/api/venv/
+/api/__pycache__/
