@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App.jsx';
+import Main from './Main.jsx';
 import NavBar from './Navbar';
 import Footer from './Footer.jsx';
 import reportWebVitals from './reportWebVitals';
@@ -10,6 +10,7 @@ import {
     applyPolyfills,
     defineCustomElements,
   } from '@telekom/scale-components/loader';
+import { BrowserRouter } from 'react-router-dom';
 
 
 applyPolyfills().then(() => {
@@ -17,14 +18,20 @@ applyPolyfills().then(() => {
 });
 
 ReactDOM.render(
-    <NavBar />,
-    document.getElementById('navbar')
+    <BrowserRouter>
+
+        <NavBar />
+        <Main />
+        
+    </BrowserRouter>,
+    
+    document.getElementById('root')
 )
 
-ReactDOM.render(
-    <App />,
-    document.getElementById('root')
-);
+// ReactDOM.render(
+    
+//     document.getElementById('root')
+// );
 
 ReactDOM.render(
     <Footer />,

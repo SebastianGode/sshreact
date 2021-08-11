@@ -31,3 +31,4 @@ docker-compose.yml
 #git update-index --assume-unchanged 
 /api/venv/
 /api/__pycache__/
+/api/data.txt

@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import axios from 'axios';
 import { ScaleTextField, ScaleButton } from '@telekom/scale-components-react';
 
 function sha512(str) {
@@ -8,7 +9,7 @@ function sha512(str) {
 }
 
 
-function App() {
+function Login() {
   const [currentTime, setCurrentTime] = useState(0);
   
   const [email, setEmail] = useState('');
@@ -28,7 +29,16 @@ function App() {
   const handleSubmit = event => {
     event.preventDefault();
     if ((`${password1}`) === (`${password2}`)) {
-      sha512(`${password1}`).then(hashedpw => console.log(hashedpw));
+      sha512(`${password1}`).then(hashedpw => {
+        const jsonstring = {
+          "auth": {
+            "email": `${email}`,
+            "password": hashedpw
+          }
+        }
+        axios.post('/api/register', jsonstring)
+            .then(response => console.log(response));
+      });
     }
     else {
       alert('Password do not match!')
@@ -45,8 +55,8 @@ function App() {
     <div>
       <form action="action_page.php" onSubmit={handleSubmit}>
         <div class="container">
-          <h1 class="Sign-Up">Sign Up</h1>
-          <p>Please fill in this form to create an account.</p>
+          <h1 class="Sign-Up">Log In</h1>
+          <p>Please fill in this form to Log-in into your existing account</p>
           
           <ScaleTextField label="E-Mail" required name="email" onScaleChange={handleEmailChange} value={email}></ScaleTextField>
           <p></p>
@@ -63,4 +73,4 @@ function App() {
   );
 }
 
-export default App;
+export default Login;
