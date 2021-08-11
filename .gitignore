@@ -32,3 +32,4 @@ docker-compose.yml
 /api/venv/
 /api/__pycache__/
 /api/data.txt
+/api/auth.json
