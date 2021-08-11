@@ -37,11 +37,12 @@ function Register() {
           }
         }
         axios.post('/api/register', jsonstring)
-            .then(response => console.log(response));
+            .then(response => console.log(response))
+            .catch(reason => console.log(reason.response.data))
       });
     }
     else {
-      alert('Password do not match!')
+      alert('Passwords do not match!')
     }
   };
 
