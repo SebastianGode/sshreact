@@ -8,8 +8,6 @@ app = Flask(__name__)
 @app.route('/api/register', methods=['POST'])
 def register():
     record = json.loads(request.data)
-    # with open('data.txt', 'a') as f:
-    #     f.write(record["auth"]["password"] + " " + record["auth"]["email"] + "\n")
     dbpass = json.load(open('auth.json', 'r'))
     username = dbpass["username"]
     password = dbpass["password"]
@@ -36,6 +34,18 @@ def register():
 
     connection.close()
     if (dbstatus != 0):
-        return str(dbstatus.errno), 500
+        errorjson = {
+          "error": {
+            "errornumber": dbstatus.errno,
+            "sqlstate": dbstatus.sqlstate,
+            "message": dbstatus.msg
+          }
+        }
+        return errorjson, 500
     else:
         return jsonify(record), 200
+
+@app.route('/api/mail', methods=['POST'])
+def mail():
+    record = json.loads(request.data)
+    return jsonify(record), 200

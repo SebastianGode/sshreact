@@ -37,8 +37,19 @@ function Register() {
           }
         }
         axios.post('/api/register', jsonstring)
-            .then(response => console.log(response))
-            .catch(reason => console.log(reason.response.data))
+            .then((response) => {
+              alert("Please confirm your E-Mail adress now!")
+              console.log(response.data.auth)
+            })
+            // .catch(reason => console.log(reason.response.data))
+            .catch((reason) => {
+              if (reason.response.data.error.errornumber === 1062) {
+                alert("E-Mail address already registered!")
+              }
+              else {
+                alert("An error occured.")
+              }
+            })
       });
     }
     else {
