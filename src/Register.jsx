@@ -40,6 +40,11 @@ function Register() {
             .then((response) => {
               alert("Please confirm your E-Mail adress now!")
               console.log(response.data.auth)
+              const emailjson = {
+                "auth": {
+                  "email": `${email}`
+                }
+              }
             })
             // .catch(reason => console.log(reason.response.data))
             .catch((reason) => {
