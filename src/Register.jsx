@@ -38,13 +38,20 @@ function Register() {
         }
         axios.post('/api/register', jsonstring)
             .then((response) => {
-              alert("Please confirm your E-Mail adress now!")
               console.log(response.data.auth)
               const emailjson = {
                 "auth": {
                   "email": `${email}`
                 }
               }
+              axios.post('/api/mail', emailjson)
+                  .then((response) => {
+                    alert("Please confirm your E-Mail adress now!")
+                    console.log(response.data.auth)
+                  })
+                  .catch((reason) => {
+                    alert("An error occured.")
+                  })
             })
             // .catch(reason => console.log(reason.response.data))
             .catch((reason) => {

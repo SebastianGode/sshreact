@@ -101,7 +101,7 @@ def mail():
     else:
         connection.close()
         context = ssl.create_default_context()
-        msg = MIMEText("Please verify your new Account using the following link: https://react.otc.ddnss.org/verify?" + token)
+        msg = MIMEText("Please verify your new Account using the following link: https://react.otc.ddnss.org/verify?token=" + token)
         msg['Subject'] = 'Verify your E-Mail address'
         msg['From'] = 'no-reply@ddnss.org'
         msg['To'] = record["auth"]["email"]
@@ -120,13 +120,6 @@ def mail():
         
         mailstatus = sendmail(msg, context, dbpass["usernamemail"], dbpass["passwordmail"], record["auth"]["email"])
         if (mailstatus != 0):
-            errorjson = {
-            "error": {
-                "errornumber": dbstatus.errno,
-                "sqlstate": dbstatus.sqlstate,
-                "message": dbstatus.msg
-                }
-            }
-            return errorjson, 500
+            return "Error", 500
         else:
             return jsonify(record), 200
