@@ -14,8 +14,9 @@ function Verify() {
           window.location.replace("/login");   
         })
         .catch((reason) => {
-          alert("An error occured.")
-          window.location.replace("/login");
+          console.log(reason.response.data)
+          alert(reason.response.data.verification.error)
+          window.location.replace("/register");
         })
   return (
     <div>

@@ -8,6 +8,7 @@ import smtplib
 import ssl
 from flask import Flask, request, jsonify
 from email.mime.text import MIMEText
+import time
 
 app = Flask(__name__)
 
@@ -75,8 +76,8 @@ def mail():
 
     def add_data(email, token):
         try:
-            statement = "INSERT INTO emailtoken (email, token) VALUES (%s, %s)"
-            data = (email, token)
+            statement = "INSERT INTO emailtoken (email, token, creation_time) VALUES (%s, %s, %s)"
+            data = (email, token, int(time.time()))
             cursor.execute(statement, data)
             connection.commit()
             return 0
@@ -137,15 +138,29 @@ def verify():
     cursor = connection.cursor()
 
     def get_data(token):
-        statement = "SELECT email FROM emailtoken WHERE token=%s"
+        statement = "SELECT email, creation_time FROM emailtoken WHERE token=%s"
         data = (token,)
         cursor.execute(statement, data)
-        for (email) in cursor:
-            return email
+        for (email, creation_time) in cursor:
+            if (int(time.time()) - creation_time < 86400):
+                if email is None:
+                    return None
+                else:
+                    return email
+            else:
+                statement = "DELETE FROM emailtoken WHERE email = %s"
+                data = (email,)
+                cursor.execute(statement, data)
+                connection.commit()
+
+                statement = "DELETE FROM auth WHERE email = %s"
+                data = (email,)
+                cursor.execute(statement, data)
+                connection.commit()
+                return -2
 
     email = get_data(record["verify"]["token"])
     
-
     def update_data(email):
         statement = "UPDATE auth SET verified = %s WHERE email = %s"
         data = (1, email)
@@ -159,19 +174,29 @@ def verify():
         return "true"
     
     verified = "false"
-    if email != None:
-        verified = update_data(email[0])
+    if (email != None and email != -2):
+        verified = update_data(email)
         returnvalue = {
-          "verfication": {
+          "verification": {
             "successful": verified
           }
         }
         connection.close()
         return returnvalue, 200
-    else:
+    elif email is None:
         returnvalue = {
-          "verfication": {
-            "successful": verified
+          "verification": {
+            "successful": verified,
+            "error": "Token is invalid, please check the validity of your link!"
+          }
+        }
+        connection.close()
+        return returnvalue, 500
+    elif email == -2:
+        returnvalue = {
+          "verification": {
+            "successful": verified,
+            "error": "Token is expired, please register again!"
           }
         }
         connection.close()
