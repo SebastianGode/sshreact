@@ -151,6 +151,11 @@ def verify():
         data = (1, email)
         cursor.execute(statement, data)
         connection.commit()
+
+        statement = "DELETE FROM emailtoken WHERE email = %s"
+        data = (email,)
+        cursor.execute(statement, data)
+        connection.commit()
         return "true"
     
     verified = "false"
@@ -161,6 +166,7 @@ def verify():
             "successful": verified
           }
         }
+        connection.close()
         return returnvalue, 200
     else:
         returnvalue = {
@@ -168,5 +174,6 @@ def verify():
             "successful": verified
           }
         }
+        connection.close()
         return returnvalue, 500
-    connection.close()
+    
