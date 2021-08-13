@@ -11,13 +11,13 @@ from email.mime.text import MIMEText
 
 app = Flask(__name__)
 
+
 @app.route('/api/register', methods=['POST'])
 def register():
     record = json.loads(request.data)
     dbpass = json.load(open('auth.json', 'r'))
     username = dbpass["username"]
     password = dbpass["password"]
-
     connection = database.connect(
         user=username,
         password=password,
@@ -37,7 +37,6 @@ def register():
             return err
 
     dbstatus = add_data(record["auth"]["email"], record["auth"]["password"])
-
     connection.close()
     if (dbstatus != 0):
         errorjson = {
@@ -62,11 +61,10 @@ def mail():
     stringvar = random_string_generator(128, chars)
     token = hashlib.sha3_512(stringvar.encode("utf-8")).hexdigest()
 
-    # DB Password
     dbpass = json.load(open('auth.json', 'r'))
     username = dbpass["username"]
     password = dbpass["password"]
-
+    # DB Connect
     connection = database.connect(
         user=username,
         password=password,
@@ -123,3 +121,52 @@ def mail():
             return "Error", 500
         else:
             return jsonify(record), 200
+
+@app.route('/api/verify', methods=['POST'])
+def verify():
+    record = json.loads(request.data)
+    dbpass = json.load(open('auth.json', 'r'))
+    username = dbpass["username"]
+    password = dbpass["password"]
+    connection = database.connect(
+        user=username,
+        password=password,
+        host="10.0.1.190",
+        database="auth"
+    )
+    cursor = connection.cursor()
+
+    def get_data(token):
+        statement = "SELECT email FROM emailtoken WHERE token=%s"
+        data = (token,)
+        cursor.execute(statement, data)
+        for (email) in cursor:
+            return email
+
+    email = get_data(record["verify"]["token"])
+    
+
+    def update_data(email):
+        statement = "UPDATE auth SET verified = %s WHERE email = %s"
+        data = (1, email)
+        cursor.execute(statement, data)
+        connection.commit()
+        return "true"
+    
+    verified = "false"
+    if email != None:
+        verified = update_data(email[0])
+        returnvalue = {
+          "verfication": {
+            "successful": verified
+          }
+        }
+        return returnvalue, 200
+    else:
+        returnvalue = {
+          "verfication": {
+            "successful": verified
+          }
+        }
+        return returnvalue, 500
+    connection.close()

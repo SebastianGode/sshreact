@@ -53,7 +53,6 @@ function Register() {
                     alert("An error occured.")
                   })
             })
-            // .catch(reason => console.log(reason.response.data))
             .catch((reason) => {
               if (reason.response.data.error.errornumber === 1062) {
                 alert("E-Mail address already registered!")
