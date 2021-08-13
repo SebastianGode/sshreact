@@ -201,4 +201,49 @@ def verify():
         }
         connection.close()
         return returnvalue, 500
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    record = json.loads(request.data)
+    dbpass = json.load(open('auth.json', 'r'))
+    username = dbpass["username"]
+    password = dbpass["password"]
+    connection = database.connect(
+        user=username,
+        password=password,
+        host="10.0.1.190",
+        database="auth"
+    )
+    cursor = connection.cursor()
+
+    def get_data(email):
+        statement = "SELECT passwordhash FROM auth WHERE email=%s"
+        data = (email,)
+        cursor.execute(statement, data)
+        for (passwordhash) in cursor:
+            if passwordhash is None:
+                return None
+            else:
+                return passwordhash
+
+    passwordhash = get_data(record["auth"]["email"])
+
+    if (record["auth"]["password"] == passwordhash[0]):
+        returnjson = {
+        "verification": {
+            "successful": "true",
+            "token": "Token"
+          }
+        }
+        return returnjson
+    
+    else:
+        returnjson = {
+        "verification": {
+            "successful": "false",
+            "error": "E-Mail or Password wrong!"
+          }
+        }
+        return returnjson, 500
+    
     

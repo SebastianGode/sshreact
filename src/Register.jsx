@@ -10,8 +10,6 @@ function sha512(str) {
 
 
 function Register() {
-  const [currentTime, setCurrentTime] = useState(0);
-  
   const [email, setEmail] = useState('');
   const handleEmailChange = event => {
     setEmail(event.target.value)

@@ -17,10 +17,10 @@ html {
   min-height: 100%;
 }
 body {
-  margin: 0 0 100px; /* bottom = footer height */
+  margin: 0 0 400px; /* bottom = footer height */
 }
 .bottom-footer {
-  position: fixed;
+  position: absolute;
   left: 0;
   bottom: 0;
   width: 100%;
