@@ -4,6 +4,7 @@ import { Switch, Route } from 'react-router-dom';
 import Register from './Register';
 import Login from './Login';
 import Verify from './Verify';
+import Sshclient from './Sshclient';
 
 const Main = () => {
   return (
@@ -11,6 +12,7 @@ const Main = () => {
       <Route exact path='/' component={Register}></Route>
       <Route exact path='/login' component={Login}></Route>
       <Route exact path='/verify' component={Verify}></Route>
+      <Route exact path='/sshclient' component={Sshclient}></Route>
     </Switch>
   );
 }

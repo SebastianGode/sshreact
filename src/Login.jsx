@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
+import { useHistory } from 'react-router-dom';
 import { ScaleTextField, ScaleButton } from '@telekom/scale-components-react';
 
 function sha512(str) {
@@ -20,6 +21,22 @@ function Login() {
     setPassword1(event.target.value)
   };
 
+  if (sessionStorage.getItem('token') != null) {
+    const verifyjson = {
+      "verify": {
+        "token": sessionStorage.getItem('token')
+      }
+    }
+    axios.post('/api/verifylogin', verifyjson)
+        .then((response) => {
+          alert("Login successful!")
+          window.location.replace("/sshclient");
+        })
+        .catch((reason) => {
+          console.log("Token invalid, please login again")
+          sessionStorage.removeItem('token')
+        })
+  }
   const handleSubmit = event => {
     event.preventDefault();
     sha512(`${password1}`).then((hashedpw) => {
@@ -30,15 +47,17 @@ function Login() {
         }
       }
       axios.post('/api/login', loginjson)
-          .then((response) => {
-            alert("Login successful!")
-            console.log(response.data.auth)
-          })
-          .catch((reason) => {
-            alert(reason.response.data.verification.error)
-          })
+        .then((response) => {
+          alert("Login successful!")
+          sessionStorage.setItem('token', response.data.verification.token)
+          window.location.replace("/sshclient");
+        })
+        .catch((reason) => {
+          alert(reason.response.data.verification.error)
+        })
       
     })
+
     
   };
 

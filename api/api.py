@@ -286,5 +286,56 @@ def login():
           }
         }
         return returnjson, 500
+
+@app.route('/api/verifylogin', methods=['POST'])
+def verifylogin():
+    record = json.loads(request.data)
+    dbpass = json.load(open('auth.json', 'r'))
+    username = dbpass["username"]
+    password = dbpass["password"]
+    connection = database.connect(
+        user=username,
+        password=password,
+        host="10.0.1.190",
+        database="auth"
+    )
+    cursor = connection.cursor()
+
+    def token_valid(token):
+        statement = "SELECT email, creation_time FROM authtoken WHERE token=%s"
+        data = (token,)
+        cursor.execute(statement, data)
+        for (email, creation_time) in cursor:
+            if (int(time.time()) - creation_time < 3600):
+                if email is None:
+                    return False
+                else:
+                    return True
+            else:
+                statement = "DELETE FROM authtoken WHERE email = %s"
+                data = (email,)
+                cursor.execute(statement, data)
+                connection.commit()
+                return False
+
+    validation = token_valid(record["verify"]["token"])
+    
+    if (validation is True):
+        returnvalue = {
+          "verification": {
+            "successful": True
+          }
+        }
+        connection.close()
+        return returnvalue, 200
+    else:
+        returnvalue = {
+          "verification": {
+            "successful": False,
+            "error": "Token is invalid"
+          }
+        }
+        connection.close()
+        return returnvalue, 500
     
     
