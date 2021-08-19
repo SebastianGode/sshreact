@@ -1,44 +1,48 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 
 
 function Sshclient() {  
   var isLoaded = false
 
-  useEffect(() => {
-    switch (sessionStorage.getItem('token')) {
-      case null:
-        window.location.replace("/login");
-      default:
-        const verifyjson = {
-          "verify": {
-            "token": sessionStorage.getItem('token')
+  const Content = () => {
+    const [content, setContent] = useState("");
+    useEffect(() => {
+      switch (sessionStorage.getItem('token')) {
+        case null:
+          setContent("You are not logged in!")
+          window.location.replace("/login");
+        default:
+          const verifyjson = {
+            "verify": {
+              "token": sessionStorage.getItem('token')
+            }
           }
-        }
-        axios.post('/api/verifylogin', verifyjson)
-            .then((response) => {
-              console.log(response.data.verification)
-              isLoaded = true
-            })
-            .catch((reason) => {
-              console.log(reason.response)
-              sessionStorage.removeItem('token')
-              window.location.replace("/login");
-            })
-    }
-  }, [])
-  
-
-  if (isLoaded === false) {
-    return (
-      <div>
-        <h1>Test</h1>
-      </div>
-    )
+          axios.post('/api/verifylogin', verifyjson)
+              .then((response) => {
+                console.log(response.data.verification)
+                isLoaded = true
+                const test="test"
+                setContent(
+                  <div>
+                    <h1>test {test}</h1>
+                  </div>
+                )
+              })
+              .catch((reason) => {
+                console.log(reason.response)
+                sessionStorage.removeItem('token')
+                setContent("You are not logged in!")
+                window.location.replace("/login");
+              })
+      }
+    }, [])
+    return content
   }
+  
   return (
     <div>
-      <h1>Test2</h1>
+      <Content/>
     </div>
   )
   
