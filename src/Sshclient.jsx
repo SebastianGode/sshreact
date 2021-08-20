@@ -11,7 +11,7 @@ function Sshclient() {
       switch (sessionStorage.getItem('token')) {
         case null:
           setContent("You are not logged in!")
-          window.location.replace("/login");
+          // window.location.replace("/login");
         default:
           const verifyjson = {
             "verify": {
@@ -33,7 +33,7 @@ function Sshclient() {
                 console.log(reason.response)
                 sessionStorage.removeItem('token')
                 setContent("You are not logged in!")
-                window.location.replace("/login");
+                // window.location.replace("/login");
               })
       }
     }, [])

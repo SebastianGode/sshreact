@@ -9,9 +9,40 @@ import ssl
 from flask import Flask, request, jsonify
 from email.mime.text import MIMEText
 import time
+import openstack
 
 app = Flask(__name__)
 
+def token_valid(token):
+        dbpass = json.load(open('auth.json', 'r'))
+        username = dbpass["username"]
+        password = dbpass["password"]
+        connection = database.connect(
+            user=username,
+            password=password,
+            host="10.0.1.190",
+            database="auth"
+        )
+        cursor = connection.cursor()
+
+        statement = "SELECT email, creation_time FROM authtoken WHERE token=%s"
+        data = (token,)
+        cursor.execute(statement, data)
+        for (email, creation_time) in cursor:
+            if (int(time.time()) - creation_time < 3600):
+                if email is None:
+                    connection.close()
+                    return False
+                else:
+                    connection.close()
+                    return email
+            else:
+                statement = "DELETE FROM authtoken WHERE email = %s"
+                data = (email,)
+                cursor.execute(statement, data)
+                connection.commit()
+                connection.close()
+                return False
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -290,6 +321,28 @@ def login():
 @app.route('/api/verifylogin', methods=['POST'])
 def verifylogin():
     record = json.loads(request.data)
+
+    validation = token_valid(record["verify"]["token"])
+    
+    if (validation is not False):
+        returnvalue = {
+          "verification": {
+            "successful": True
+          }
+        }
+        return returnvalue, 200
+    else:
+        returnvalue = {
+          "verification": {
+            "successful": False,
+            "error": "Token is invalid"
+          }
+        }
+        return returnvalue, 500
+
+@app.route('/api/createinstance', methods=['POST'])
+def createinstance():
+    record = json.loads(request.data)
     dbpass = json.load(open('auth.json', 'r'))
     username = dbpass["username"]
     password = dbpass["password"]
@@ -300,42 +353,90 @@ def verifylogin():
         database="auth"
     )
     cursor = connection.cursor()
+    
+    validation = token_valid(record["verify"]["token"])
 
-    def token_valid(token):
-        statement = "SELECT email, creation_time FROM authtoken WHERE token=%s"
-        data = (token,)
-        cursor.execute(statement, data)
-        for (email, creation_time) in cursor:
-            if (int(time.time()) - creation_time < 3600):
-                if email is None:
-                    return False
-                else:
-                    return True
-            else:
-                statement = "DELETE FROM authtoken WHERE email = %s"
+    if (validation is not False):
+        email = validation
+
+        def check_data(email):
+            statement = "SELECT email, creation_time, instance_id, keypair_id, floating_ip_id FROM servers WHERE email=%s"
+            data = (email,)
+            cursor.execute(statement, data)
+            for (email, creation_time, instance_id, keypair_id, floating_ip_id) in cursor:
+                conn = openstack.connect(
+                    cloud="otc"
+                )
+                server = conn.compute.find_server(instance_id)
+                if server:
+                    conn.compute.wait_for_server(server)
+                    ip = conn.network.find_ip(name_or_id=floating_ip_id)
+                    if ip:
+                        conn.compute.remove_floating_ip_from_server(
+                            server=instance_id,
+                            address=ip.floating_ip_address
+                        )
+                        conn.network.delete_ip(ip)
+                    conn.compute.delete_server(
+                        server=instance_id
+                    )
+
+                statement = "DELETE FROM servers WHERE email = %s"
                 data = (email,)
                 cursor.execute(statement, data)
                 connection.commit()
-                return False
 
-    validation = token_valid(record["verify"]["token"])
-    
-    if (validation is True):
-        returnvalue = {
-          "verification": {
-            "successful": True
-          }
+        def add_data(email):
+            # Generating a random name based on random string hash to assign random names to Keypair and server
+            def random_string_generator(str_size, allowed_chars):
+                return ''.join(random.choice(allowed_chars) for x in range(str_size))
+            chars = string.ascii_letters + string.punctuation
+            stringvar = random_string_generator(128, chars)
+            name = hashlib.md5(stringvar.encode("utf-8")).hexdigest()
+            
+            # Connect to OTC
+            conn = openstack.connect(
+                cloud="otc"
+            )
+
+            # Generate keypair and get flavor id and create floating ip
+            keypair = conn.compute.create_keypair(name=name)
+            flavor = conn.compute.find_flavor("s3.medium.1")
+            floating_ip = conn.network.create_ip(name=name)
+
+            # Check whether Server already exists and delete it
+            check_data(email)
+
+            # Create new Server
+            instance = conn.compute.create_server(
+                name=name,
+                image_id="020c14d5-6529-47fc-af6d-e3e979dcc5f0",
+                flavor_id=flavor.id,
+                networks=[{"uuid": "f80955e7-bd2b-4ab5-ae83-ebf6d2c3804a"}],
+                key_name=keypair.name
+            )
+            # Delete keypair immediatly as it is unecessary
+            conn.compute.delete_keypair(keypair.id)
+
+            # Update Database
+            statement = "INSERT INTO servers (email, instance_id, creation_time, keypair_id, floating_ip_id) VALUES (%s, %s, %s, %s, %s)"
+            data = (email, instance.id, int(time.time()), keypair.id, floating_ip.id)
+            cursor.execute(statement, data)
+            connection.commit()
+            return {
+                "instance_id": instance.id,
+                "keypair_id": keypair.id,
+                "keypair_key": keypair.private_key,
+                "floating_ip": floating_ip.floating_ip_address
+            }
+        
+        server = add_data(email)
+        returnjson = {
+            "private_key": server.keypair_key,
         }
-        connection.close()
-        return returnvalue, 200
+        return returnjson, 200
+
     else:
-        returnvalue = {
-          "verification": {
-            "successful": False,
-            "error": "Token is invalid"
-          }
-        }
-        connection.close()
-        return returnvalue, 500
+        return "Autherr", 500
     
     
