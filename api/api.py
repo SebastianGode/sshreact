@@ -402,7 +402,9 @@ def createinstance():
             # Generate keypair and get flavor id and create floating ip
             keypair = conn.compute.create_keypair(name=name)
             flavor = conn.compute.find_flavor("s3.medium.1")
-            floating_ip = conn.network.create_ip(name=name)
+            floating_ip = conn.network.create_ip(
+                floating_network_id="0a2228f2-7f8a-45f1-8e09-9039e1d09975"
+            )
 
             # Check whether Server already exists and delete it
             check_data(email)
@@ -423,6 +425,15 @@ def createinstance():
             data = (email, instance.id, int(time.time()), keypair.id, floating_ip.id)
             cursor.execute(statement, data)
             connection.commit()
+
+            # Add floating_ip to server, waiting for creation first
+            conn.compute.wait_for_server(
+                instance
+            )
+            conn.compute.add_floating_ip_to_server(
+                server=instance,
+                address=floating_ip.floating_ip_address
+            )
             return {
                 "instance_id": instance.id,
                 "keypair_id": keypair.id,
@@ -432,7 +443,8 @@ def createinstance():
         
         server = add_data(email)
         returnjson = {
-            "private_key": server.keypair_key,
+            "private_key": server['keypair_key'],
+            "floating_ip": server['floating_ip'],
         }
         return returnjson, 200
 
