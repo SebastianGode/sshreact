@@ -60,8 +60,8 @@ def register():
 
     def add_data(email, passwordhash):
         try:
-            statement = "INSERT INTO auth (email, passwordhash, verified) VALUES (%s, %s, %s)"
-            data = (email, passwordhash, 0)
+            statement = "INSERT INTO auth (email, passwordhash, verified, creation_time) VALUES (%s, %s, %s, %s)"
+            data = (email, passwordhash, 0, int(time.time()))
             cursor.execute(statement, data)
             connection.commit()
             return 0
@@ -450,5 +450,3 @@ def createinstance():
 
     else:
         return "Autherr", 500
-    
-    
