@@ -438,13 +438,15 @@ def createinstance():
                 "instance_id": instance.id,
                 "keypair_id": keypair.id,
                 "keypair_key": keypair.private_key,
-                "floating_ip": floating_ip.floating_ip_address
+                "floating_ip": floating_ip.floating_ip_address,
+                "name": name
             }
         
         server = add_data(email)
         returnjson = {
             "private_key": server['keypair_key'],
             "floating_ip": server['floating_ip'],
+            "name": server['name']
         }
         return returnjson, 200
 
