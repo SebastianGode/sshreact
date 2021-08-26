@@ -28,8 +28,10 @@ function Verify() {
                 setContent(
                   <h1>Error occured</h1>
                 )
-                alert(reason.response.data.verification.error)
-                window.location.replace("/register");
+                setTimeout(() => {
+                  alert(reason.response.data.verification.error)
+                  window.location.replace("/");
+                }, 400)
               })
       }, [])
       return content
