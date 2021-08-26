@@ -4,7 +4,7 @@ import time
 import openstack
 import json
 
-dbpass = json.load(open('api/auth.json', 'r'))
+dbpass = json.load(open('/home/ubuntu/codeserver/sshreact/api/auth.json', 'r'))
 username = dbpass["username"]
 password = dbpass["password"]
 # DB Connect
@@ -38,7 +38,7 @@ def servers():
                 conn.compute.delete_server(
                     server=instance_id
                 )
-            dbpass = json.load(open('api/auth.json', 'r'))
+            dbpass = json.load(open('/home/ubuntu/codeserver/sshreact/api/auth.json', 'r'))
             username = dbpass["username"]
             password = dbpass["password"]
             connection2 = database.connect(
@@ -60,7 +60,7 @@ def emailtoken():
     cursor.execute(statement)
     for (email, creation_time) in cursor:
         if (int(time.time()) - int(creation_time) > 86400):
-            dbpass = json.load(open('api/auth.json', 'r'))
+            dbpass = json.load(open('/home/ubuntu/codeserver/sshreact/api/auth.json', 'r'))
             username = dbpass["username"]
             password = dbpass["password"]
             connection2 = database.connect(
@@ -82,7 +82,7 @@ def authtoken():
     cursor.execute(statement)
     for (email, creation_time) in cursor:
         if (int(time.time()) - int(creation_time) > 3600):
-            dbpass = json.load(open('api/auth.json', 'r'))
+            dbpass = json.load(open('/home/ubuntu/codeserver/sshreact/api/auth.json', 'r'))
             username = dbpass["username"]
             password = dbpass["password"]
             connection2 = database.connect(
@@ -103,7 +103,7 @@ def auth():
     cursor.execute(statement)
     for row in cursor:
         if (int(time.time()) - int(row[1]) > 604800):
-            dbpass = json.load(open('api/auth.json', 'r'))
+            dbpass = json.load(open('/home/ubuntu/codeserver/sshreact/api/auth.json', 'r'))
             username = dbpass["username"]
             password = dbpass["password"]
             connection2 = database.connect(
