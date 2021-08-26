@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
-import { wait } from '@testing-library/react';
+import { ScaleButton, ScaleDivider, ScaleTable } from '@telekom/scale-components-react';
 
 function Sshclient() {  
 
@@ -50,12 +50,32 @@ function Sshclient() {
                           const linktosshclient = ("https://ssh.otc.ddnss.org/#+SSH:ubuntu@" + response.data.floating_ip + "%7CPrivate%20Key%7Cutf-8")
                           setContent(
                             <div class="centered">
-                              <h1>Server instance created</h1>
-                              <p>IP: {response.data.floating_ip}</p>
-                              <p>username: ubuntu</p>
-                              <input type="button" id="dwn-btn" value="Download private-key file"/>
+                              <ScaleTable striped>
+                                <table>
+                                  <caption>
+                                    Server instance created!
+                                  </caption>
+                                  <tbody>
+                                    <tr>
+                                      <td>IP address</td>
+                                      <td>{response.data.floating_ip}</td>
+                                    </tr>
+                                    <tr>
+                                      <td>username</td>
+                                      <td>ubuntu</td>
+                                    </tr>
+                                    <tr>
+                                      <td>Private-Key</td>
+                                      <td><ScaleButton type="button" id="dwn-btn">Download private-key file</ScaleButton></td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </ScaleTable>
+                              <p></p>
                               <p></p>
                               <p>You can now connect to this instance through ssh using the private key for authentication</p>
+                              <ScaleDivider></ScaleDivider>
+                              <p></p>
                               <p>Either use your preferred ssh client or try our online In-Browser client: <a href={linktosshclient} target="_blank">Link</a></p>
                             </div>
                           )

@@ -29,7 +29,6 @@ function Login() {
     }
     axios.post('/api/verifylogin', verifyjson)
         .then((response) => {
-          alert("Login successful!")
           window.location.replace("/sshclient");
         })
         .catch((reason) => {
@@ -48,7 +47,6 @@ function Login() {
       }
       axios.post('/api/login', loginjson)
         .then((response) => {
-          alert("Login successful!")
           sessionStorage.setItem('token', response.data.verification.token)
           window.location.replace("/sshclient");
         })
