@@ -7,7 +7,6 @@ import json
 dbpass = json.load(open('/home/ubuntu/codeserver/sshreact/api/auth.json', 'r'))
 username = dbpass["username"]
 password = dbpass["password"]
-# DB Connect
 connection = database.connect(
     user=username,
     password=password,
@@ -54,7 +53,6 @@ def servers():
             connection2.commit()
             connection2.close()
 
-
 def emailtoken():
     statement = "SELECT email, creation_time FROM emailtoken"
     cursor.execute(statement)
@@ -75,7 +73,6 @@ def emailtoken():
             cursor2.execute(statement, data)
             connection2.commit()
             connection2.close()
-
 
 def authtoken():
     statement = "SELECT email, creation_time FROM authtoken"
@@ -118,7 +115,6 @@ def auth():
             cursor2.execute(statement, data)
             connection2.commit()
             connection2.close()
-
 
 servers()
 emailtoken()
