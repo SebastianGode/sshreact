@@ -32,7 +32,7 @@ def token_valid(token):
             if (int(time.time()) - creation_time < 3600):
                 if email is None:
                     connection.close()
-                    return False
+                    return None
                 else:
                     connection.close()
                     return email
@@ -42,7 +42,7 @@ def token_valid(token):
                 cursor.execute(statement, data)
                 connection.commit()
                 connection.close()
-                return False
+                return None
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -343,8 +343,7 @@ def verifylogin():
     record = json.loads(request.data)
 
     validation = token_valid(record["verify"]["token"])
-    
-    if (validation is not False):
+    if (validation is not None):
         returnvalue = {
           "verification": {
             "successful": True
@@ -376,7 +375,7 @@ def createinstance():
     
     validation = token_valid(record["verify"]["token"])
 
-    if (validation is not False):
+    if (validation is not None):
         email = validation
 
         def check_data(email):
@@ -472,3 +471,125 @@ def createinstance():
 
     else:
         return "Autherr", 500
+
+@app.route('/api/deleteaccount', methods=['POST'])
+def deleteaccount():
+    record = json.loads(request.data)
+
+    validation = token_valid(record["verify"]["token"])
+    
+    if (validation is not False):
+        email = validation
+        def servers(email):
+            dbpass = json.load(open('auth.json', 'r'))
+            username = dbpass["username"]
+            password = dbpass["password"]
+            connection = database.connect(
+                user=username,
+                password=password,
+                host="10.0.1.190",
+                database="auth"
+            )
+            conn = openstack.connect(
+                cloud="otc"
+            )
+            cursor = connection.cursor()
+            statement = "SELECT creation_time, instance_id, floating_ip_id, email FROM servers WHERE email = %s"
+            data = (email,)
+            cursor.execute(statement, data)
+            for (creation_time, instance_id, floating_ip_id, email) in cursor:
+                server = conn.compute.find_server(instance_id)
+                if server:
+                    conn.compute.wait_for_server(server)
+                    ip = conn.network.find_ip(name_or_id=floating_ip_id)
+                    if ip:
+                        conn.compute.remove_floating_ip_from_server(
+                            server=instance_id,
+                            address=ip.floating_ip_address
+                        )
+                        conn.network.delete_ip(ip)
+                    conn.compute.delete_server(
+                        server=instance_id
+                    )
+                dbpass = json.load(open('/home/ubuntu/codeserver/sshreact/api/auth.json', 'r'))
+                username = dbpass["username"]
+                password = dbpass["password"]
+                connection2 = database.connect(
+                    user=username,
+                    password=password,
+                    host="10.0.1.190",
+                    database="auth"
+                )
+                cursor2 = connection2.cursor(buffered=True)
+                statement = "DELETE FROM servers WHERE email = %s"
+                data = (email,)
+                cursor2.execute(statement, data)
+                connection2.commit()
+                connection2.close()
+
+        def emailtoken(email):
+            dbpass = json.load(open('auth.json', 'r'))
+            username = dbpass["username"]
+            password = dbpass["password"]
+            connection = database.connect(
+                user=username,
+                password=password,
+                host="10.0.1.190",
+                database="auth"
+            )
+            cursor = connection.cursor()
+            statement = "DELETE FROM emailtoken WHERE email = %s"
+            data = (email,)
+            cursor.execute(statement, data)
+            connection.commit()
+            connection.close()
+
+        def authtoken(email):
+            dbpass = json.load(open('auth.json', 'r'))
+            username = dbpass["username"]
+            password = dbpass["password"]
+            connection = database.connect(
+                user=username,
+                password=password,
+                host="10.0.1.190",
+                database="auth"
+            )
+            cursor = connection.cursor()
+            statement = "DELETE FROM authtoken WHERE email = %s"
+            data = (email,)
+            cursor.execute(statement, data)
+            connection.commit()
+            connection.close()
+
+        def auth(email):
+            dbpass = json.load(open('auth.json', 'r'))
+            username = dbpass["username"]
+            password = dbpass["password"]
+            connection = database.connect(
+                user=username,
+                password=password,
+                host="10.0.1.190",
+                database="auth"
+            )
+            cursor = connection.cursor()
+            statement = "DELETE FROM auth WHERE email = %s"
+            data = (email,)
+            cursor.execute(statement, data)
+            connection.commit()
+            connection.close()
+    
+        servers(email)
+        emailtoken(email)
+        authtoken(email)
+        auth(email)
+
+        return "success", 200
+
+    else:
+        returnvalue = {
+          "verification": {
+            "successful": False,
+            "error": "Token is invalid"
+          }
+        }
+        return returnvalue, 500
