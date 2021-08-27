@@ -269,72 +269,81 @@ def login():
 
     passwordhash = get_data(record["auth"]["email"])
     verified = get_verified(record["auth"]["email"])
+    print(record)
+    if record is not None and passwordhash is not None:
+        if (record["auth"]["password"] == passwordhash[0]):
+            # Generating a random token based on random string hash
+            def random_string_generator(str_size, allowed_chars):
+                return ''.join(random.choice(allowed_chars) for x in range(str_size))
+            chars = string.ascii_letters + string.punctuation
+            stringvar = random_string_generator(128, chars)
+            token = hashlib.sha3_512(stringvar.encode("utf-8")).hexdigest()
 
-    if (record["auth"]["password"] == passwordhash[0]):
-        # Generating a random token based on random string hash
-        def random_string_generator(str_size, allowed_chars):
-            return ''.join(random.choice(allowed_chars) for x in range(str_size))
-        chars = string.ascii_letters + string.punctuation
-        stringvar = random_string_generator(128, chars)
-        token = hashlib.sha3_512(stringvar.encode("utf-8")).hexdigest()
-
-        def add_data(email, token):
-            def check_data(email):
-                statement = "SELECT email, creation_time FROM authtoken WHERE email=%s"
-                data = (email,)
-                cursor.execute(statement, data)
-                for (email, creation_time) in cursor:
-                    statement = "DELETE FROM authtoken WHERE email = %s"
+            def add_data(email, token):
+                def check_data(email):
+                    statement = "SELECT email, creation_time FROM authtoken WHERE email=%s"
                     data = (email,)
                     cursor.execute(statement, data)
-                    connection.commit()
+                    for (email, creation_time) in cursor:
+                        statement = "DELETE FROM authtoken WHERE email = %s"
+                        data = (email,)
+                        cursor.execute(statement, data)
+                        connection.commit()
 
-            try:
-                result = check_data(email)
-                statement = "INSERT INTO authtoken (email, token, creation_time) VALUES (%s, %s, %s)"
-                data = (email, token, int(time.time()))
-                cursor.execute(statement, data)
-                connection.commit()
-                return 0
-            except database.Error as err:
-                return err
+                try:
+                    result = check_data(email)
+                    statement = "INSERT INTO authtoken (email, token, creation_time) VALUES (%s, %s, %s)"
+                    data = (email, token, int(time.time()))
+                    cursor.execute(statement, data)
+                    connection.commit()
+                    return 0
+                except database.Error as err:
+                    return err
+            
+            if (verified[0] == 1):
+                dbstatus = add_data(record["auth"]["email"], token)
+            else:
+                returnjson = {
+                "verification": {
+                    "successful": "false",
+                    "error": "E-Mail address not verified!"
+                    }
+                }
+                return returnjson, 500
+
+            if (dbstatus != 0):
+                returnjson = {
+                "verification": {
+                    "successful": "false",
+                    "error": "An unknown error occured!"
+                    }
+                }
+                return returnjson, 500
+
+            # Returning the token
+            else: 
+                returnjson = {
+                "verification": {
+                    "successful": "true",
+                    "token": token
+                    }
+                }
+                return returnjson
         
-        if (verified[0] == 1):
-            dbstatus = add_data(record["auth"]["email"], token)
         else:
             returnjson = {
             "verification": {
                 "successful": "false",
-                "error": "E-Mail address not verified!"
+                "error": "E-Mail or Password wrong!"
                 }
             }
             return returnjson, 500
-
-        if (dbstatus != 0):
-            returnjson = {
-            "verification": {
-                "successful": "false",
-                "error": "An unknown error occured!"
-                }
-            }
-            return returnjson, 500
-
-        # Returning the token
-        else: 
-            returnjson = {
-            "verification": {
-                "successful": "true",
-                "token": token
-                }
-            }
-            return returnjson
-    
     else:
         returnjson = {
         "verification": {
             "successful": "false",
             "error": "E-Mail or Password wrong!"
-          }
+            }
         }
         return returnjson, 500
 

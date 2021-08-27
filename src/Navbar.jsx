@@ -19,6 +19,9 @@ function NavBar(props) {
                             "name": "Login", "href": "/login"
                         },
                         {
+                            "name": "Account-Management", "href": "/account"
+                        },
+                        {
                             "name": "Contact", "href": "/contact"
                         },
                         {

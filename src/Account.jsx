@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 
-function Verify() {
+function Account() {
   const Content = () => {
       const [content, setContent] = useState("");
       useEffect(() => {
@@ -14,24 +14,20 @@ function Verify() {
           setContent(
             <h1>Checking Token...</h1>
           )
-          axios.post('/api/verify', jsontoken)
+          axios.post('/api/verifylogin', jsontoken)
               .then((response) => {
                 setContent(
-                  <h1>Verify successful! You will be redirected in 5 seconds.</h1>
+                  <h1>Verification successful!</h1>
                 )
-                setTimeout(() => {
-                  window.location.replace("/login");   
-                }, 5000)
               })
               .catch((reason) => {
                 console.log(reason.response.data)
                 setContent(
-                  <h1>Error occured</h1>
+                  <h1>You need to sign-in first! Redirecting...</h1>
                 )
                 setTimeout(() => {
-                  alert(reason.response.data.verification.error)
-                  window.location.replace("/");
-                }, 400)
+                    window.location.replace("/login");
+                  }, 1000)
               })
       }, [])
       return content
@@ -43,4 +39,4 @@ function Verify() {
   );
 }
 
-export default Verify;
+export default Account;
