@@ -1,6 +1,6 @@
 {
     "HostName": "",
-    "SharedKey": "OTC",
+    "SharedKey": "",
     "DialTimeout": 5,
     "Socks5": "",
     "Socks5User": "",
