@@ -257,7 +257,18 @@ def login():
             else:
                 return passwordhash
 
+    def get_verified(email):
+        statement = "SELECT verified FROM auth WHERE email=%s"
+        data = (email,)
+        cursor.execute(statement, data)
+        for (verified) in cursor:
+            if verified is None:
+                return None
+            else:
+                return verified
+
     passwordhash = get_data(record["auth"]["email"])
+    verified = get_verified(record["auth"]["email"])
 
     if (record["auth"]["password"] == passwordhash[0]):
         # Generating a random token based on random string hash
@@ -287,14 +298,23 @@ def login():
                 return 0
             except database.Error as err:
                 return err
-
-        dbstatus = add_data(record["auth"]["email"], token)
+        
+        if (verified[0] == 1):
+            dbstatus = add_data(record["auth"]["email"], token)
+        else:
+            returnjson = {
+            "verification": {
+                "successful": "false",
+                "error": "E-Mail address not verified!"
+                }
+            }
+            return returnjson, 500
 
         if (dbstatus != 0):
             returnjson = {
             "verification": {
                 "successful": "false",
-                "error": "An unknown error ocurred!"
+                "error": "An unknown error occured!"
                 }
             }
             return returnjson, 500
