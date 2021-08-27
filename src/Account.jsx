@@ -43,9 +43,9 @@ function Account() {
                 setContent(
                   <h1>You need to sign-in first! Redirecting...</h1>
                 )
-                // setTimeout(() => {
-                //     window.location.replace("/login");
-                //   }, 1000)
+                setTimeout(() => {
+                    window.location.replace("/login");
+                  }, 1000)
               })
       }, [])
       return content
